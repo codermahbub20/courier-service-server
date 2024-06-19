@@ -1,20 +1,19 @@
-const express = require('express')
+const express = require('express');
 const mongoose = require('mongoose');
-const app = express()
+const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config()
+require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors())
-app.use(express.json()) 
-
-
-
-
-
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rarr4yf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -24,18 +23,26 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server (optional starting in v4.7)
     // await client.connect();
 
     const packageCollection = client.db("niyamatDB").collection("package");
 
 
-    // Post pa
+
+    // Post package in database
+    app.post('/package', async (req, res) => {
+       
+            const package = req.body;
+            const result = await packageCollection.insertOne(package)
+            res.send(result);
+
+    });
 
 
 
@@ -51,13 +58,10 @@ async function run() {
 }
 run().catch(console.dir);
 
-
-
-
 app.get('/', (req, res) => {
-  res.send('Niyamt Itr Courier Service Running!')
-})
+  res.send('Niyamt Itr Courier Service Running!');
+});
 
 app.listen(port, () => {
-  console.log(`Courier Service app listening on port ${port}`)
-})
+  console.log(`Courier Service app listening on port ${port}`);
+});
