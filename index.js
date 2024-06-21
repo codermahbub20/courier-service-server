@@ -40,15 +40,15 @@ async function run() {
 
 
     // Post package in database
-    app.post('/package', async (req, res) => {    
-            const package = req.body;
-            const result = await packageCollection.insertOne(package)
-            res.send(result);
+    app.post('/package', async (req, res) => {
+      const package = req.body;
+      const result = await packageCollection.insertOne(package)
+      res.send(result);
     });
 
 
-     // Save or modify user email, status in DB
-     app.put('/users/:email', async (req, res) => {
+    // Save or modify user email, status in DB
+    app.put('/users/:email', async (req, res) => {
       const email = req.params.email
       const user = req.body
       const query = { email: email }
@@ -80,21 +80,7 @@ async function run() {
     })
 
 
-    // auth related api
-    app.post('/jwt', async (req, res) => {
-      const user = req.body
-      console.log('I need a new jwt', user)
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '365d',
-      })
-      res
-        .cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        })
-        .send({ success: true })
-    })
+    
 
     // Logout
     app.get('/logout', async (req, res) => {
@@ -112,9 +98,19 @@ async function run() {
       }
     })
 
+    // Get all users
+    app.get('/users', async (req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
 
 
-
+ // Get user role
+ app.get('/user/:email', async (req, res) => {
+  const email = req.params.email
+  const result = await usersCollection.findOne({ email })
+  res.send(result)
+})
 
 
     // Send a ping to confirm a successful connection
