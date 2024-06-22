@@ -46,6 +46,12 @@ async function run() {
       res.send(result);
     });
 
+    // Get all Package
+    app.get('/package', async (req, res) => {
+      const result = await packageCollection.find().toArray()
+      res.send(result)
+    })
+
 
     // Save or modify user email, status in DB
     app.put('/users/:email', async (req, res) => {
