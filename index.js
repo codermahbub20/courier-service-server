@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const cookieParser = require('cookie-parser')
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000;
 
@@ -53,6 +53,30 @@ async function run() {
     })
 
 
+    // updated package action info
+    app.patch('/package/:id', async (req, res) => {
+      const id = req.params.id
+      const update = req.body
+      console.log(update)
+      const query = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          update: update
+        }
+      }
+      const result = await packageCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
+
+
+    app.get('/package/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await packageCollection.findOne(query);
+      res.send(result)
+    });
+
+
     // Save or modify user email, status in DB
     app.put('/users/:email', async (req, res) => {
       const email = req.params.email
@@ -86,7 +110,23 @@ async function run() {
     })
 
 
-    
+    // Update user role
+app.put('/users/update/:email',  async (req, res) => {
+  const email = req.params.email
+  const user = req.body
+  const query = { email: email }
+  const options = { upsert: true }
+  const updateDoc = {
+    $set: {
+      ...user,
+      timestamp: Date.now(),
+    },
+  }
+  const result = await usersCollection.updateOne(query, updateDoc, options)
+  res.send(result)
+})
+
+
 
     // Logout
     app.get('/logout', async (req, res) => {
@@ -111,12 +151,12 @@ async function run() {
     })
 
 
- // Get user role
- app.get('/user/:email', async (req, res) => {
-  const email = req.params.email
-  const result = await usersCollection.findOne({ email })
-  res.send(result)
-})
+    // Get user role
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email
+      const result = await usersCollection.findOne({ email })
+      res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
