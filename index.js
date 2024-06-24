@@ -56,12 +56,13 @@ async function run() {
     // updated package action info
     app.patch('/package/:id', async (req, res) => {
       const id = req.params.id
-      const update = req.body
+      console.log(id)
+      const {update} = req.body
       console.log(update)
       const query = { _id: new ObjectId(id) }
       const updatedDoc = {
         $set: {
-          update: update
+          update
         }
       }
       const result = await packageCollection.updateOne(query, updatedDoc)
@@ -75,6 +76,20 @@ async function run() {
       const result = await packageCollection.findOne(query);
       res.send(result)
     });
+
+
+  //   app.get('/package/:trackingNumber', async (req, res) => {
+  //     try {
+  //         const package = await packageCollection.findOne({ "packageTrackingNumber.trackingNumber": req.params.trackingNumber });
+  //         if (!package) return res.status(404).json({ message: 'Package not found' });
+  //         res.json(package);
+  //     } catch (err) {
+  //         res.status(500).json({ message: err.message });
+  //     }
+  // });
+
+
+
 
 
     // Save or modify user email, status in DB
