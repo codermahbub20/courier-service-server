@@ -9,6 +9,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000;
 
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY )
 // Middleware
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://localhost:5174'],
@@ -36,6 +37,7 @@ async function run() {
 
     const packageCollection = client.db("niyamatDB").collection("package");
     const usersCollection = client.db('niyamatDB').collection('users')
+    const bookingsCollection = client.db('niyamatDB').collection('booking')
 
 
 
@@ -76,19 +78,6 @@ async function run() {
       const result = await packageCollection.findOne(query);
       res.send(result)
     });
-
-
-  //   app.get('/package/:trackingNumber', async (req, res) => {
-  //     try {
-  //         const package = await packageCollection.findOne({ "packageTrackingNumber.trackingNumber": req.params.trackingNumber });
-  //         if (!package) return res.status(404).json({ message: 'Package not found' });
-  //         res.json(package);
-  //     } catch (err) {
-  //         res.status(500).json({ message: err.message });
-  //     }
-  // });
-
-
 
 
 
@@ -170,6 +159,28 @@ app.put('/users/update/:email',  async (req, res) => {
     app.get('/user/:email', async (req, res) => {
       const email = req.params.email
       const result = await usersCollection.findOne({ email })
+      res.send(result)
+    })
+
+
+
+    // Generate client secret for stripe payment
+    app.post('/create-payment-intent', verifyToken, async (req, res) => {
+      const { price } = req.body
+      const amount = parseInt(price * 100)
+      if (!price || amount < 1) return
+      const { client_secret } = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card'],
+      })
+      res.send({ clientSecret: client_secret })
+    })
+
+    // Save booking collection 
+    app.post('/bookings',  async (req, res) => {
+      const booking = req.body
+      const result = await bookingsCollection.insertOne(booking)
       res.send(result)
     })
 
