@@ -72,6 +72,23 @@ async function run() {
     })
 
 
+    // updated booking package action info
+    app.patch('/bookings/:id', async (req, res) => {
+      const id = req.params.id
+      console.log(id)
+      const {update} = req.body
+      console.log(update)
+      const query = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set: {
+          update
+        }
+      }
+      const result = await bookingsCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
+
+
     app.get('/package/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -165,7 +182,7 @@ app.put('/users/update/:email',  async (req, res) => {
 
 
     // Generate client secret for stripe payment
-    app.post('/create-payment-intent', verifyToken, async (req, res) => {
+    app.post('/create-payment-intent',  async (req, res) => {
       const { price } = req.body
       const amount = parseInt(price * 100)
       if (!price || amount < 1) return
@@ -183,6 +200,13 @@ app.put('/users/update/:email',  async (req, res) => {
       const result = await bookingsCollection.insertOne(booking)
       res.send(result)
     })
+
+
+   // Get all bookings for user
+   app.get('/bookings', async (req, res) => {
+    const result = await bookingsCollection.find().toArray()
+    res.send(result)
+  })
 
 
     // Send a ping to confirm a successful connection
