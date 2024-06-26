@@ -209,6 +209,38 @@ app.put('/users/update/:email',  async (req, res) => {
   })
 
 
+
+  // Admin Stat Data
+  app.get('/admin-stat',   async (req, res) => {
+    const bookingsDetails = await bookingsCollection
+      .find({}, { projection: { date: 1, price: 1 } })
+      .toArray()
+    const userCount = await usersCollection.countDocuments()
+    const packageCount = await packageCollection.countDocuments()
+    const totalSale = bookingsDetails.reduce(
+      (sum, data) => sum + data.price,
+      0
+    )
+
+    const chartData = bookingsDetails.map(data => {
+      const day = new Date(data.date).getDate()
+      const month = new Date(data.date).getMonth() + 1
+      return [day + '/' + month, data.price]
+    })
+    chartData.unshift(['Day', 'Sale'])
+    res.send({
+      totalSale,
+      bookingCount: bookingsDetails.length,
+      userCount,
+      packageCount,
+      chartData,
+    })
+  })
+
+
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
